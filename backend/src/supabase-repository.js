@@ -52,6 +52,9 @@ export function createSupabaseRepository({ url, key }, fetchImpl = fetch) {
   return {
     ready: () => request('products?select=id&limit=1'),
     listProducts: () => request('products?select=id,sku,name,unit&active=eq.true&order=name.asc'),
+    listOrders: ({ limit, offset }) => request(
+      `orders?select=id,customer_name,status,created_at,order_items(product_id,product_name,unit,quantity)&order=created_at.desc,id.desc&limit=${limit}&offset=${offset}`,
+    ),
     createOrder: ({ customerName, items }) => request('rpc/create_order', {
       method: 'POST', body: JSON.stringify({ p_customer_name: customerName, p_items: items }),
     }),

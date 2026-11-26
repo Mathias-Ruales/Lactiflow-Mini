@@ -1,6 +1,6 @@
 # Backend de Lactiflow Pedidos
 
-Incremento del Sprint 1: consultar tres productos ficticios y registrar un pedido con sus cantidades en un proyecto Supabase propio. El backend funciona sin iniciar Lactiflow principal. La Mini original sigue siendo la interfaz de totales; este sprint no la convierte todavía en un formulario de pedidos.
+Incremento del Sprint 1: consultar tres productos ficticios y registrar un pedido con sus cantidades en un proyecto Supabase propio, llamado Lactiflow Clientes. El backend funciona sin iniciar Lactiflow principal. La Mini ahora ofrece un formulario de Pedidos y conserva Totales en una sección separada.
 
 Se usa Node.js 22 o superior, con HTTP y fetch incorporados. No hace falta instalar dependencias adicionales del backend.
 
@@ -38,6 +38,7 @@ El puerto predeterminado es `3001`, distinto del backend principal. El arranque 
 | GET | `/health/ready` | Conexión y acceso a `products`; 503 si falla. |
 | GET | `/api/products` | Catálogo ficticio activo del proyecto Pedidos. |
 | POST | `/api/orders` | Guarda un pedido y sus detalles; devuelve 201. |
+| GET | `/api/orders?limit=10&offset=0` | Historial de la demo, más recientes primero; devuelve `hasMore` para paginar. |
 | GET | `/api/orders/:id` | Recupera el pedido guardado y sus productos. |
 
 Ejemplo de pedido:
@@ -53,12 +54,14 @@ Ejemplo de pedido:
 
 Las cantidades deben ser enteros entre 1 y 1000; no se aceptan pedidos vacíos ni productos repetidos. Los nombres y unidades se obtienen del catálogo del servidor. El estado es `registrado`, que significa guardado localmente, no aceptado ni recibido por Lactiflow principal. Cabecera y productos se insertan en una sola función de PostgreSQL: si algún producto falla, la operación completa se revierte.
 
+La pestaña Historial consulta los pedidos guardados en Supabase y permite abrir su detalle incluso después de recargar la página. Muestra el historial compartido de esta base de prueba, no pedidos filtrados por usuario: el aislamiento personal depende de la autenticación y autorización pendientes. Por ello el servidor sigue limitado a la computadora local.
+
 ## Demostración de la review
 
-1. Mantener apagado el backend de Lactiflow principal para evidenciar independencia.
+1. Mantener apagado el backend de Lactiflow principal para evidenciar independencia de Pedidos; la sección Totales sí depende de ese sistema.
 2. Iniciar este backend y consultar `/health/ready`.
-3. Consultar el catálogo y crear el pedido del archivo `demo.http` con Postman u otro cliente HTTP.
-4. Copiar el ID de la respuesta y recuperarlo por `/api/orders/:id`.
+3. Iniciar `npm run dev` en otra terminal desde la raíz del repositorio. Abrir Vite, entrar a Pedidos, escribir un nombre de prueba, seleccionar cantidades y pulsar Registrar pedido. También se puede usar `demo.http` con Postman u otro cliente HTTP.
+4. La confirmación muestra el ID y los productos guardados. Pulsar Volver a consultar para recuperar el pedido desde la base, o consultar `/api/orders/:id`.
 5. En Supabase Table Editor, mostrar la cabecera en `orders` y sus detalles en `order_items`. Reiniciar el backend y volver a recuperar el mismo ID para comprobar persistencia.
 6. Enviar la cantidad cero: debe responder 400. Enviar el ejemplo con un producto inexistente: debe responder 422 sin dejar una cabecera ni detalles parciales. Comparar los registros antes y después.
 
@@ -70,7 +73,7 @@ npm run test:backend
 
 Las pruebas automatizadas verifican HTTP, validación, errores, consulta posterior del pedido y el contrato REST/RPC con dobles de prueba. No usan credenciales ni contactan Supabase. No demuestran por sí solas persistencia real, permisos ni rollback en PostgreSQL: completar la demostración anterior después de crear el proyecto y ejecutar el esquema. No marcar esas tareas como terminadas antes de verificarlo.
 
-Pendientes de próximos sprints: identidad central, SSO, MFA, federación, autorización por usuario, comunicación con Lactiflow principal y cifrado mediante KMS. La conexión del formulario de pedidos es adicional al alcance mínimo actual.
+Se verificó el flujo del formulario a Supabase con un pedido de prueba, su consulta posterior y la presentación de errores. Pendientes de próximos sprints: identidad central, SSO, MFA, federación, autorización por usuario, comunicación con Lactiflow principal y cifrado mediante KMS.
 
 ## Referencias
 

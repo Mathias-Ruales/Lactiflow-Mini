@@ -14,6 +14,7 @@ async function fixture(t, overrides = {}) {
   const repository = {
     ready: async () => [],
     listProducts: async () => [{ id: PRODUCT, name: 'Leche de prueba', unit: '1 L' }],
+    listOrders: async ({ limit, offset }) => [...stored.values()].slice(offset, offset + limit),
     async createOrder(order) {
       writes++;
       const result = { id: ORDER, customer_name: order.customerName, status: 'registrado',
@@ -48,6 +49,36 @@ test('catalog identifies its test products', async (t) => {
   assert.equal(response.status, 200);
   assert.equal(result.catalog, 'test-products');
   assert.equal(result.products[0].id, PRODUCT);
+});
+
+test('history is paginated and reports whether more records exist', async (t) => {
+  let received;
+  const records = Array.from({ length: 11 }, (_, i) => ({ id: `saved-${i}` }));
+  const f = await fixture(t, { listOrders: async (input) => { received = input; return records; } });
+  const response = await fetch(`${f.url}/api/orders?limit=10&offset=20`);
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.deepEqual(received, { limit: 11, offset: 20 });
+  assert.equal(body.orders.length, 10);
+  assert.equal(body.hasMore, true);
+  assert.equal(body.offset, 20);
+});
+
+test('history rejects invalid pagination without querying the database', async (t) => {
+  let calls = 0;
+  const f = await fixture(t, { listOrders: async () => { calls++; return []; } });
+  for (const query of ['limit=0', 'limit=51', 'limit=1.5', 'offset=-1', 'offset=100001', 'offset=abc']) {
+    assert.equal((await fetch(`${f.url}/api/orders?${query}`)).status, 400);
+  }
+  assert.equal(calls, 0);
+});
+
+test('empty history is distinct from a database failure', async (t) => {
+  const f = await fixture(t);
+  const response = await fetch(`${f.url}/api/orders`);
+  assert.deepEqual(await response.json(), { orders: [], hasMore: false, limit: 10, offset: 0 });
+  const broken = await fixture(t, { listOrders: async () => { throw new DatabaseError('private'); } });
+  assert.equal((await fetch(`${broken.url}/api/orders`)).status, 503);
 });
 
 test('valid order can be created and retrieved; client cannot select its status', async (t) => {

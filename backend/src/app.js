@@ -36,7 +36,8 @@ export function createApp({ repository, origins = ['http://localhost:5173'] }) {
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
         return reply(204);
       }
-      const path = new URL(req.url, 'http://localhost').pathname;
+      const url = new URL(req.url, 'http://localhost');
+      const path = url.pathname;
       if (req.method === 'GET' && path === '/health') {
         return reply(200, { status: 'ok', service: 'lactiflow-pedidos', mode: 'local-sprint-1' });
       }
@@ -52,6 +53,19 @@ export function createApp({ repository, origins = ['http://localhost:5173'] }) {
         const saved = await repository.createOrder(order);
         res.setHeader('Location', `/api/orders/${saved.id}`);
         return reply(201, { order: saved });
+      }
+      if (req.method === 'GET' && path === '/api/orders') {
+        const limitText = url.searchParams.get('limit') ?? '10';
+        const offsetText = url.searchParams.get('offset') ?? '0';
+        if (!/^\d+$/.test(limitText) || !/^\d+$/.test(offsetText)) {
+          throw new RequestError(400, 'La paginación no es válida.');
+        }
+        const limit = Number(limitText), offset = Number(offsetText);
+        if (limit < 1 || limit > 50 || offset > 100000 || !Number.isSafeInteger(offset)) {
+          throw new RequestError(400, 'La paginación no es válida.');
+        }
+        const rows = await repository.listOrders({ limit: limit + 1, offset });
+        return reply(200, { orders: rows.slice(0, limit), hasMore: rows.length > limit, limit, offset });
       }
       const match = path.match(/^\/api\/orders\/([^/]+)$/);
       if (req.method === 'GET' && match) {

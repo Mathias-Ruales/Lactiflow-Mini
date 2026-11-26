@@ -1,12 +1,16 @@
-# LactiFlow — Totales
+# LactiFlow Clientes
 
 ## Sprint 1 de Software Seguro
 
-Se añadió la base independiente de **Lactiflow Pedidos** en `backend/`, con configuración para un proyecto Supabase propio, catálogo ficticio y registro de pedidos. La interfaz de totales existente permanece disponible. Consultar [la configuración y demostración del backend](backend/README.md).
+La sección **Pedidos** permite escribir el nombre del cliente, elegir productos de prueba y cantidades y registrar un pedido. **Historial** muestra los pedidos guardados, más recientes primero, y permite abrir sus detalles después de recargar la página. Es el historial compartido de la demo; el historial personal se integrará con el inicio de sesión. Usa el backend independiente de `backend/` y el proyecto Supabase **Lactiflow Clientes**. La sección **Totales** conserva el panel anterior y sigue consultando al Lactiflow principal.
 
-Desde esta carpeta: `npm run backend:dev` para la API y `npm run test:backend` para sus pruebas. Primero hay que crear el proyecto Supabase de Pedidos y completar la configuración descrita en esa guía. La conexión a una base real no se considera verificada hasta ejecutar la demostración.
+Desde esta carpeta, iniciar `npm run backend:dev` en una terminal y `npm run dev` en otra; abrir la dirección que muestra Vite. `npm run test:backend` ejecuta las pruebas de la API. Consultar [la configuración del backend y la demostración](backend/README.md).
 
-A lightweight read-only dashboard that displays daily production totals predicted by the LactiFlow suggestion engine.
+La conexión a Supabase y el registro y consulta de un pedido desde la interfaz se verificaron con datos de prueba. La autenticación de usuarios, el SSO, MFA, federación, integración con Lactiflow principal y KMS siguen pendientes. Esta es una demo local, no una API lista para exposición pública.
+
+En desarrollo, `VITE_ORDERS_API_URL` usa `/pedidos-api` y Vite redirige al backend local del puerto 3001. Si cambia ese puerto, ajustar el proxy de `vite.config.js`. El proxy no forma parte del sitio compilado: un despliegue futuro debe definir `VITE_ORDERS_API_URL` con la URL de su backend o configurar un proxy en el alojamiento, junto con los controles de acceso pendientes. No se incluyen claves secretas en las variables `VITE_`.
+
+El panel original de totales muestra las cantidades sugeridas por fecha. La documentación que sigue describe esa sección y su conexión al backend principal; el formulario de Pedidos tiene su backend y configuración propios.
 
 Built with **Vue 3 + Bootstrap 5**. Consumes the **public API** from the LactiFlow backend — no login or authentication required.
 
