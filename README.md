@@ -1,5 +1,11 @@
 # LactiFlow — Totales
 
+## Sprint 1 de Software Seguro
+
+Se añadió la base independiente de **Lactiflow Pedidos** en `backend/`, con configuración para un proyecto Supabase propio, catálogo ficticio y registro de pedidos. La interfaz de totales existente permanece disponible. Consultar [la configuración y demostración del backend](backend/README.md).
+
+Desde esta carpeta: `npm run backend:dev` para la API y `npm run test:backend` para sus pruebas. Primero hay que crear el proyecto Supabase de Pedidos y completar la configuración descrita en esa guía. La conexión a una base real no se considera verificada hasta ejecutar la demostración.
+
 A lightweight read-only dashboard that displays daily production totals predicted by the LactiFlow suggestion engine.
 
 Built with **Vue 3 + Bootstrap 5**. Consumes the **public API** from the LactiFlow backend — no login or authentication required.
